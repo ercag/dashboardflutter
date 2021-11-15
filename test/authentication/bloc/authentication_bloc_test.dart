@@ -2,6 +2,7 @@ import 'package:authentication_repository/authentication_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dashboardflutter/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:menu_repository/menu_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:user_repository/user_repository.dart';
 
@@ -12,22 +13,25 @@ class MockUserRepository extends Mock implements UserRepository {}
 
 void main() {
   const user = User('id');
+  List<Menu>? menuList = [];
   late AuthenticationRepository authenticationRepository;
   late UserRepository userRepository;
+  late MenuRepository menuRepository;
 
   setUp(() {
     authenticationRepository = MockAuthenticationRepository();
     when(() => authenticationRepository.status)
         .thenAnswer((_) => const Stream.empty());
     userRepository = MockUserRepository();
+    menuRepository = MenuRepository();
   });
 
   group('AuthenticationBloc', () {
     test('initial state is AuthenticationState.unknown', () {
       final authenticationBloc = AuthenticationBloc(
-        authenticationRepository: authenticationRepository,
-        userRepository: userRepository,
-      );
+          authenticationRepository: authenticationRepository,
+          userRepository: userRepository,
+          menuRepository: menuRepository);
       expect(authenticationBloc.state, const AuthenticationState.unknown());
       authenticationBloc.close();
     });
@@ -42,6 +46,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       expect: () => const <AuthenticationState>[
         AuthenticationState.unauthenticated(),
@@ -55,13 +60,16 @@ void main() {
           (_) => Stream.value(AuthenticationStatus.authenticated),
         );
         when(() => userRepository.getUser()).thenAnswer((_) async => user);
+        when(() => menuRepository.getMenuList(user.id))
+            .thenAnswer((_) async => menuList);
       },
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
-      expect: () => const <AuthenticationState>[
-        AuthenticationState.authenticated(user),
+      expect: () => <AuthenticationState>[
+        AuthenticationState.authenticated(user, menuList),
       ],
     );
   });
@@ -78,12 +86,13 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(
         const AuthenticationStatusChanged(AuthenticationStatus.authenticated),
       ),
-      expect: () => const <AuthenticationState>[
-        AuthenticationState.authenticated(user),
+      expect: () => <AuthenticationState>[
+        AuthenticationState.authenticated(user, menuList),
       ],
     );
 
@@ -97,6 +106,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(
         const AuthenticationStatusChanged(AuthenticationStatus.unauthenticated),
@@ -114,6 +124,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(
         const AuthenticationStatusChanged(AuthenticationStatus.authenticated),
@@ -132,6 +143,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(
         const AuthenticationStatusChanged(AuthenticationStatus.authenticated),
@@ -151,6 +163,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(
         const AuthenticationStatusChanged(AuthenticationStatus.unknown),
@@ -168,6 +181,7 @@ void main() {
       build: () => AuthenticationBloc(
         authenticationRepository: authenticationRepository,
         userRepository: userRepository,
+        menuRepository: menuRepository,
       ),
       act: (bloc) => bloc.add(AuthenticationLogoutRequested()),
       verify: (_) {

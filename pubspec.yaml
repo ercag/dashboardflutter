@@ -43,6 +43,9 @@ dependencies:
     path: packages/authentication_repository
   user_repository:
     path: packages/user_repository
+  menu_repository:
+    path: packages/menu_repository
+  flutter_zoom_drawer: ^2.1.1
 
 dev_dependencies:
   flutter_test:

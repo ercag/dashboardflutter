@@ -5,6 +5,7 @@ import 'package:dashboardflutter/login/view/login_page.dart';
 import 'package:dashboardflutter/splash/view/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:menu_repository/menu_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 class App extends StatelessWidget {
@@ -12,10 +13,12 @@ class App extends StatelessWidget {
     Key? key,
     required this.authenticationRepository,
     required this.userRepository,
+    required this.menuRepository,
   }) : super(key: key);
 
   final AuthenticationRepository authenticationRepository;
   final UserRepository userRepository;
+  final MenuRepository menuRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +26,9 @@ class App extends StatelessWidget {
       value: authenticationRepository,
       child: BlocProvider(
         create: (_) => AuthenticationBloc(
-          authenticationRepository: authenticationRepository,
-          userRepository: userRepository,
-        ),
+            authenticationRepository: authenticationRepository,
+            userRepository: userRepository,
+            menuRepository: menuRepository),
         child: AppView(),
       ),
     );
